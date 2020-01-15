@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 )
 
 type Table struct {
@@ -22,7 +21,6 @@ type Fork struct {
 }
 
 func (p *Philosopher) think() {
-	time.Sleep(time.Second)
 	fmt.Printf("Pholosopher %d is thinking", p.Id)
 }
 
@@ -64,5 +62,4 @@ func main() {
 			Free: true,
 		}
 	}
-
 }
