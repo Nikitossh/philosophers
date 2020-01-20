@@ -2,64 +2,49 @@ package main
 
 import (
 	"fmt"
+	"sync"
 )
 
-type Table struct {
-	Forks        []Fork
-	Philosophers []Philosopher
+
+type SafeCounter struct {
+	count	int
+	mux	sync.Mutex
+}
+
+func NewCounter() SafeCounter {
+	s := SafeCounter{
+		count: 0,
+	}
+	return s
 }
 
 type Philosopher struct {
 	Id        int
-	leftFork  *Fork
-	rightFork *Fork
 }
 
-type Fork struct {
-	Id   int
-	Free bool
-}
-
-func (p *Philosopher) think() {
-	fmt.Printf("Pholosopher %d is thinking", p.Id)
-}
-
-func (p *Philosopher) eat() {
-	fmt.Printf("Philosopher %d is eating", p.Id)
-}
-
-func (p *Philosopher) takeLeftFork(fork *Fork) *Fork {
-	if fork.Free != true {
-		return nil
+func NewPhilosopher(sc *SafeCounter) Philosopher {
+	sc.IncCounter()
+	return Philosopher{
+		Id: sc.count,
 	}
-	return fork
 }
 
-func (p *Philosopher) takeRightFork(fork *Fork) *Fork {
-	if fork.Free != true {
-		return nil
-	}
-	return fork
+func (sc *SafeCounter) IncCounter() {
+        sc.mux.Lock()
+	defer sc.mux.Unlock()
+	sc.count++
+        fmt.Printf("Count: %d", sc.count)
 }
 
-func (p *Philosopher) putFork(fork *Fork) *Fork {
-	fork.Free = true
-	return fork
+func (p *Philosopher) String() {
+       fmt.Println(p.Id) 
 }
 
 func main() {
-	phs := make([]Philosopher, 5)
-	for i, _ := range phs {
-		phs[i] = Philosopher{
-			Id: i,
-		}
+        sc := NewCounter()
+        phils := make([]Philosopher, 10)
+	for i := 0; i < 10; i++ {
+	        phils[i] = NewPhilosopher(&sc)
 	}
-
-	forks := make([]Fork, 5)
-	for i, _ := range forks {
-		forks[i] = Fork{
-			Id:   i,
-			Free: true,
-		}
-	}
+	fmt.Printf("Last Count: %d", sc.count)
 }
